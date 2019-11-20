@@ -1,0 +1,189 @@
+---
+modules:
+  - .tenant
+---
+objects:
+  - broken_item: BrokenItem
+  - broken_item.item: ""
+  - user: Tenant
+  - tenant_guest: TenantGuest
+---
+sections:
+  - Introduction
+  - Facts:
+    - What broke
+    - Who broke it
+    - Intent
+  - Review
+---
+features:
+  navigation: True
+  progress bar: True
+---
+mandatory: True
+code: |
+  menu_items = [ action_menu_item('Roadmap', 'road_map') ]
+---
+initial: True
+code: |
+  set_info(user=user)
+  tenant_guest.name = "your guest"
+  tenant_guest.gender = "other"
+---
+question: |
+  Is this an urgent matter?
+yesno: is_urgent
+---
+section: Introduction
+question: |
+  What type of problem do you have?
+field: problem_type
+choices:
+  - Something broke, and my landlord says I have to pay for it
+---
+section: What broke
+need: problem_type
+question: What broke?
+subquestion: |
+  Okay, something broke! It’s *very* possible you don’t have to pay for it.  
+fields:
+  - What broke?: broken_item.item
+    choices:
+      - A pipe burst: pipe
+      - A pipe is leaking: pipe
+      - The oven handle broke: oven handle
+      - Something else: other
+---
+section: What broke
+question: More info
+subquestion: |
+  More info about your broken ${ broken_item.item }
+fields:
+  - "Is the ${ broken_item.item } a part of your apartment?": broken_item.fixture
+    datatype: radio
+    choices:
+      - It's very built-in: built-in
+      - It's kind of built-in: kinda
+      - It's a chattel: chattel
+      - I don't know: unknown
+  - "Was the ${ broken_item.item } in the apartment when you first moved in?": broken_item.fixture
+    datatype: yesnomaybe
+    show if:
+      variable: broken_item.fixture
+      is: unknown
+---
+section: What broke
+question: More info
+subquestion: |
+  More info about your broken ${ broken_item.item }
+fields:
+  - "When did the ${ broken_item.item } break?": broken_item.date_broken
+    datatype: radio
+    choices:
+      - Today: today
+      - Yesterday or earlier: another day
+      - I don't know: unknown
+  - "What day?": broken_item.date_broken
+    datatype: date
+    show if:
+      variable: broken_item.date_broken
+      is: another day
+  - "When did you find out that the ${ broken_item.item } was broken?": broken_item.date_discovered_broken
+    datatype: radio
+    choices:
+      - Today: today
+      - Yesterday or earlier: another day
+    show if:
+      variable: broken_item.date_broken
+      is: unknown
+  - "What day?": broken_item.date_discovered_broken
+    datatype: date
+    show if:
+      variable: broken_item.date_discovered_broken
+      is: another day
+---
+code: |
+  if broken_item.date_broken != None or broken_item.date_discovered_broken != None:
+    broken_item_date = "test"
+---
+section: Who broke it
+question: |
+  Who damaged the ${ broken_item.item }?
+field: who_broke
+choices:
+  - I broke it: tenant
+  - One of my guests: tenant guest
+---
+code: |
+  if who_broke == "tenant":
+    breaker = user
+  elif who_broke == "tenant guest":
+    breaker = tenant_guest
+---
+section: Intent
+generic object: MyIndividual
+question: |
+  Did ${ x.subject() } intend to damage the ${ broken_item.item }?
+fields:
+  - "Did ${ x.subject() } **intend** to damage the ${ broken_item.item }?": x.intent
+    datatype: yesnoradio
+  - note: "If ${ x.subject() } intended to cause the damage, ${ x.pronoun_subjective() }'ll have to pay for it. But we can still help! Go on for now:"
+    show if: x.intent
+  - "${ x.were_question('being negligent or careless', capitalize=True) }?": x.negligence
+    datatype: yesnoradio
+    show if:
+      variable: x.intent
+      is: False
+  - note: "If ${ x.subject() } intended to cause the damage, ${ x.pronoun_subjective() }'ll have to pay for it. But we can still help! Go on for now:"
+    show if: x.negligence
+---
+section: Review
+question: "Review the facts"
+review:
+  - Revisit what broke: broken_item.item
+    button: |
+      Your ${ broken_item.item } needs repair.
+  - Revisit who broke it: who_broke
+    button: |
+      ${ breaker.subject(capitalize=True) } broke it.
+  - Revisit intent: breaker.intent
+    button: |
+      % if breaker.intent:
+      ${ breaker.subject(capitalize=True) } intended to break it.
+      % else:
+      ${ breaker.subject(capitalize=True) } did not intend to break it.
+      % endif
+  - Revisit negligence: breaker.negligence
+    button: |
+      % if breaker.negligence:
+        % if breaker == user:
+        You were negligent.
+        % else:
+        ${ breaker.subject(capitalize=True) } was negligent.
+        % endif
+      % else:
+        % if breaker == user:
+        You were not negligent.
+        % else:
+        ${ breaker.subject(capitalize=True) } was not negligent.
+        % endif
+      % endif
+field: answers_reviewed
+---
+progress: 100
+mandatory: True
+need:
+  - broken_item.item
+  - breaker
+  - breaker.intent
+  - breaker.negligence
+  - answers_reviewed
+  - broken_item.fixture
+  - broken_item_date
+question: |
+  All done!
+buttons:
+  - Exit: exit
+    
+    
+    
