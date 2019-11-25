@@ -13,6 +13,6 @@ We are building an interactive questionnaire that collects responses from a tena
 
 ## Author
 
-William Boan, waboan@gmail.com
-Govind Mohan, info@govindmohan.com
+- William Boan, waboan@gmail.com
+- Govind Mohan, info@govindmohan.com
 
