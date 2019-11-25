@@ -1,6 +1,6 @@
 # Housing Project
 
-Disputes between landlords and tenants often involve disorganized timelines and technical legal documents. Delays caused by a lack of legal knowledge before by a lack of legal knowledge before adjudicating bodies waste time and money.
+Disputes between landlords and tenants often involve disorganized timelines and technical legal documents. Delays caused by a lack of legal knowledge before adjudicating bodies waste time and money.
 
 We are building an interactive questionnaire that collects responses from a tenant with issues and evidence (fact pattern) and provides them with a document to provide to the relevant authority (landlord, tenant board, attorney, etc.). The questionnaire is guided by interviews conducted by the UofT Legal Hackers chapter with help from Downtown Legal Services (DLS) at the University of Toronto
 
