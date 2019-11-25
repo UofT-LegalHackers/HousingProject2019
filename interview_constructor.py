@@ -3,22 +3,9 @@ from numpy import unicode
 import re
 
 
-# READING:
-# with open('output.yml') as file:
-#     # The FullLoader parameter handles the conversion from YAML
-#     # scalar values to Python the dictionary format
-#     documents = yaml.load_all(file, Loader=yaml.FullLoader)
-#
-#     print(documents)
-#
-#     for doc in documents:
-#         print(doc)
 
 
-
-
-
-# WRITING:
+# FOR WRITING TO YML:
 class literal_unicode(unicode): pass
 
 def literal_unicode_representer(dumper, data):
@@ -27,15 +14,18 @@ def literal_unicode_representer(dumper, data):
 yaml.add_representer(literal_unicode, literal_unicode_representer)
 
 
+
+
+
+
+# INTERVIEW CLASS and QUESTION CLASS:
 class Interview(object):
     def __init__(self, results=None, preferred_result=None, Q_logic=None):
         self.questions = []
         self.issue_var = 'issue_liable'
         self.review_label = 'Change'
-
         self.results = results
         self.preferred_result = preferred_result
-
         self.relationships = []
         self._Q_logic = Q_logic
 
@@ -96,7 +86,6 @@ class Interview(object):
 
     def return_dict(self):
         interview_dict = []
-
         # Append the initial block, for sections:
         interview_dict.append({
             'sections': [{'Questions': []}, 'Determination'],
@@ -144,7 +133,6 @@ class Interview(object):
         interview_dict.append(review_block)
         # Append all the questions, etc:
         self.write_yml_for_questions(self.questions, interview_dict, review_list)
-
         return interview_dict
 
     def write_yml_for_questions(self, question_list, interview_dict, review_list):
@@ -179,9 +167,7 @@ class Interview(object):
         new_relationship = (bool, *questions)
         self.relationships.append(new_relationship)
 
-
-
-
+        
 class Question(object):
     def __init__(self, q_text, q_review_text_true="Yes",
                  q_review_text_false="No", q_type='buttons', sub_Q_logic=None):
@@ -361,6 +347,8 @@ class Question(object):
 
 
 
+    
+    
 # EXAMPLE 1: APPLE PIE INTERVIEW
 test_interview1 = Interview(
     results={
