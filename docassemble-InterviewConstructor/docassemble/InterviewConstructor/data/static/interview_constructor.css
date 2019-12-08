@@ -1,0 +1,9 @@
+.review-entry {
+  display: flex;
+}
+.review-entry-text {
+  flex-grow: 1;
+}
+.review-btn {
+  margin-left: 4px;
+}

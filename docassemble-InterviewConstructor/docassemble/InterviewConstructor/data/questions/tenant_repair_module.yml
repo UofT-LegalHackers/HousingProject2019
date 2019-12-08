@@ -1,0 +1,121 @@
+modules:
+  - .interview_constructor
+---
+features:
+  css: interview_constructor.css
+  navigation: True
+sections:
+- Questions
+- Determination
+---
+initial: True
+code: |
+  if task_not_yet_performed('init'):
+    mark_task_as_performed('init')
+
+    interview = Interview(
+      results={
+        True: "You have to pay for the repair.",
+        False: "You do *not* have to pay for the repair."
+      },
+      preferred_result=False
+    )
+    q1 = Question(
+      'q1',
+      Q_text='Is the broken item a part of the apartment?',
+      answers={
+        True: 'The broken item is a part of the apartment.',
+        False: 'The broken item is not a part of the apartment.'
+      }
+    )
+    q2 = Question(
+      'q2',
+      Q_text='Did you cause the damage to the broken item?',
+      answers={
+        True: 'You caused the damage to the broken item.',
+        False: "You didn't cause the damage to the broken item."
+      }
+    )
+    q3 = Question(
+      'q3',
+      Q_text='Did you **intend** to break the item?',
+      answers={
+        True: 'You intended to break the item.',
+        False: "You didn't intend to break the item."
+      }
+    )
+    q4 = Question(
+      'q4',
+      Q_text='Were you being negligent or careless when you broke the item?',
+      answers={
+        True: "You were negligent.",
+        False: "You weren't negligent."
+      }
+    )
+    q4_1 = Question(
+      'q4_1',
+      Q_text='Were you using everything normally?',
+      answers={
+        True: "You were using everything normally.",
+        False: "You were using some things not normally."
+      }
+    )
+    interview.interview_logic = NOT(
+      AND(q1, OR(NOT(q2), AND(NOT(q3), NOT(OR_SUB(q4, NOT(q4_1))))))
+    )
+---
+mandatory: True
+code: |
+  issue_var
+  answers_reviewed
+---
+code: |
+  if eval(interview.interview_logic.logic):
+    issue_var = True
+  else:
+    issue_var = False
+---
+question: Determination
+sets: answers_reviewed
+subquestion: |
+  ${ interview.results[issue_var] }
+  
+  Here's what you answered:
+  
+  % for Q in interview.questions():
+    % if defined('Q.answer'):
+    <div class="review-entry">
+    <div class="review-entry-text" style="text-indent: ${ Q.Q_depth * 30 }px;">
+    • ${ Q.answers[Q.final_answer] }
+    </div>
+    ${ action_button_html(url_ask([{'undefine': [Q.var+'.answer_yesno', Q.var+'.answer_yesnomaybe']}, {'recompute': [Q.var+'.answer', Q.var+'.final_answer', 'issue_var']}]), icon='fas fa-times', label='', classname='review-btn') }
+    ${ action_button_html(url_ask(Q.var), icon='fas fa-file', label='', classname='review-btn') }
+    </div>
+    % endif
+  % endfor
+---
+generic object: Question
+code: |
+  if x.answer is None and x.is_super_Q is True:
+    x.final_answer = eval(x.sub_logic_piece.logic)
+  else:
+    x.final_answer = x.answer
+---
+generic object: Question
+code: |
+  if x.is_super_Q is True:
+    x.answer = x.answer_yesnomaybe
+  else:
+    x.answer = x.answer_yesno
+---
+generic object: Question
+question: Facts
+subquestion: |
+  ${ x.Q_text }
+yesno: x.answer_yesno
+---
+generic object: Question
+question: Facts
+subquestion: |
+  ${ x.Q_text }
+yesnomaybe: x.answer_yesnomaybe
